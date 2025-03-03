@@ -34,6 +34,7 @@ def image2text(image_path):
     cv2.imshow("Preprocessed Image", thresh)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    return text
 
 def extract_text(text):
     aadhaar_pattern = r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}\b'
@@ -75,6 +76,8 @@ async def capture_photo():
 
     return {"message": "Photo captured successfully", "path": IMAGE_PATH}
 
+def verify_kyc(data1,data2,cardinality= 1):
+    return cardinality == 1
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -85,10 +88,27 @@ async def upload_file(file: UploadFile = File(...)):
         f.write(await file.read())
 
     return {"message": "File uploaded successfully", "path": file_location}
-@app.post('/validate_Configuration_1')
+@app.post('/get_aadhar_no')
 async def validate_configuration_1(file : UploadFile=File(...)):
     b_file= await file.read()
     with open("abc.jpg",'wb') as f:
         f.write(b_file)
-    return image2text("abc.jpg")
+    return extract_text(image2text("abc.jpg"))[0]
 
+import requests
+def get_aadhar_data(aadhar_no):
+    data = ""
+    return data
+
+
+@app.post("/verify")
+async def verify(file: UploadFile = File(...)):
+    url = "127.0.0.1:8888/get_aadhar_no/"
+    b_file= await file.read()
+    with open("abc.jpg",'wb') as f:
+        f.write(b_file)
+    aadhar_no = extract_text(image2text("abc.jpg"))[0]
+    aadhar_data = get_aadhar_data(aadhar_no)
+    if verify_kyc(aadhar_data,image2text("abc.jpg"),2):
+        return "successfully verifyied"
+    return "verification unsuccessful"
